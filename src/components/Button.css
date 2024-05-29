@@ -1,0 +1,22 @@
+/* src/components/Button.css */
+.btn {
+    background-color: #007bff;
+    color: rgb(51, 51, 51);
+    border: none;
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn:disabled {
+    background-color: #c0c0c016;
+    cursor: not-allowed;
+  }
+  
+  .btn:not(:disabled):hover {
+    background-color: #0056b3;
+  }
+  
