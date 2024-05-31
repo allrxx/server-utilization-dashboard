@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import GraphWidget from '../components/GraphWidget';
 import Button from '../components/Button';
 import Papa from 'papaparse';
-import './Dashboard.css';
+import './Dashboard.css'; // Import the CSS file for Dashboard
 
 const Dashboard = () => {
   const [dailyData, setDailyData] = useState({});
