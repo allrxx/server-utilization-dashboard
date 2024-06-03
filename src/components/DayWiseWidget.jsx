@@ -1,14 +1,13 @@
-// src/components/GraphWidget.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
 import Chart from 'react-apexcharts';
 
-const GraphWidget = ({ title, categories, series, yAxisRange }) => {
+const DayWiseWidget = ({ title, categories, series, yAxisRange }) => {
   const { minY, maxY } = yAxisRange;
 
   const options = {
     chart: {
-      id: 'cpu-utilization-chart',
+      id: 'day-wise-chart',
       toolbar: {
         show: true,
       },
@@ -19,10 +18,11 @@ const GraphWidget = ({ title, categories, series, yAxisRange }) => {
     yaxis: {
       min: minY,
       max: maxY,
+      tickAmount: 10, // Ensure more data points on y-axis
       labels: {
-        formatter: (value) => value.toFixed(3),
+        formatter: (value) => value.toFixed(6),
       },
-    }
+    },
   };
 
   return (
@@ -33,7 +33,7 @@ const GraphWidget = ({ title, categories, series, yAxisRange }) => {
   );
 };
 
-GraphWidget.propTypes = {
+DayWiseWidget.propTypes = {
   title: PropTypes.string.isRequired,
   categories: PropTypes.arrayOf(PropTypes.string).isRequired,
   series: PropTypes.arrayOf(
@@ -48,4 +48,4 @@ GraphWidget.propTypes = {
   }).isRequired,
 };
 
-export default GraphWidget;
+export default DayWiseWidget;
