@@ -242,31 +242,31 @@ const Dashboard = () => {
             categories={hourlyChartData.categories}
             series={hourlyChartData.series}
             yAxisRange={hourlyChartData.yAxisRange}
+            onNext={handleNextPage}
+            onPrev={handlePrevPage}
+            disableNext={currentPage === dates.length - 1}
+            disablePrev={currentPage === 0}
           />
-          <div className="button-container">
-            <Button onClick={handlePrevPage} disabled={currentPage === 0}>Previous Hour</Button>
-            <Button onClick={handleNextPage} disabled={currentPage === dates.length - 1}>Next Hour</Button>
-          </div>
           <DayWiseWidget
             title={`Day-wise CPU Utilization`}
             categories={currentWeekChartData.categories}
             series={currentWeekChartData.series}
             yAxisRange={currentWeekChartData.yAxisRange}
+            onNext={handleNextDayPage}
+            onPrev={handlePrevDayPage}
+            disableNext={currentDayPage === Math.ceil(dailyData.length / 7) - 1}
+            disablePrev={currentDayPage === 0}
           />
-          <div className="button-container">
-            <Button onClick={handlePrevDayPage} disabled={currentDayPage === 0}>Previous Week</Button>
-            <Button onClick={handleNextDayPage} disabled={currentDayPage === Math.ceil(dailyData.length / 7) - 1}>Next Week</Button>
-          </div>
           <TrendGraph
             title="Weekly CPU Utilization"
             categories={weeklyChartData.categories}
             series={weeklyChartData.series}
             yAxisRange={weeklyChartData.yAxisRange}
+            onNext={handleNextWeeklyPage}
+            onPrev={handlePrevWeeklyPage}
+            disableNext={currentWeeklyPage === Math.ceil(weeklyData.length / 6) - 1}
+            disablePrev={currentWeeklyPage === 0}
           />
-          <div className="button-container">
-            <Button onClick={handlePrevWeeklyPage} disabled={currentWeeklyPage === 0}>Previous</Button>
-            <Button onClick={handleNextWeeklyPage} disabled={currentWeeklyPage === Math.ceil(weeklyData.length / 6) - 1}>Next</Button>
-          </div>
         </div>
       )}
     </div>
