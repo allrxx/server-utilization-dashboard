@@ -103,24 +103,44 @@ const Dashboard = () => {
   };
 
   const transformDailyData = (data) => {
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const categories = [];
     const dailyValues = [];
     const dailyLowerValues = [];
     const dailyUpperValues = [];
-
+  
+    const dayDataMap = new Map();
+  
+    // Initialize the map with empty arrays for each day of the week
+    daysOfWeek.forEach(day => {
+      dayDataMap.set(day, {
+        daily: [],
+        daily_lower: [],
+        daily_upper: [],
+      });
+    });
+  
     data.forEach(item => {
       const date = new Date(item.ds);
       const day = date.toLocaleDateString('en-US', { weekday: 'short' });
-      const dateString = date.toLocaleDateString();
-      categories.push(`${day} (${dateString})`);
-      dailyValues.push(parseFloat(item.daily));
-      dailyLowerValues.push(parseFloat(item.daily_lower));
-      dailyUpperValues.push(parseFloat(item.daily_upper));
+      if (dayDataMap.has(day)) {
+        dayDataMap.get(day).daily.push(parseFloat(item.daily));
+        dayDataMap.get(day).daily_lower.push(parseFloat(item.daily_lower));
+        dayDataMap.get(day).daily_upper.push(parseFloat(item.daily_upper));
+      }
     });
-
+  
+    daysOfWeek.forEach(day => {
+      const dayData = dayDataMap.get(day);
+      categories.push(day);
+      dailyValues.push(dayData.daily.length ? dayData.daily.reduce((a, b) => a + b) / dayData.daily.length : 0);
+      dailyLowerValues.push(dayData.daily_lower.length ? Math.min(...dayData.daily_lower) : 0);
+      dailyUpperValues.push(dayData.daily_upper.length ? Math.max(...dayData.daily_upper) : 0);
+    });
+  
     const minY = Math.min(...dailyLowerValues);
     const maxY = Math.max(...dailyUpperValues);
-
+  
     return {
       categories,
       series: [
@@ -132,6 +152,7 @@ const Dashboard = () => {
       yAxisRange: { minY, maxY },
     };
   };
+  
 
   const dates = Object.keys(hourlyData);
   const currentDateData = dates.length > 0 ? hourlyData[dates[currentPage]] : {};
