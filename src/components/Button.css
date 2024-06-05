@@ -20,3 +20,8 @@
 .btn:not(:disabled):hover {
   background-color: #0056b3;
 }
+
+.buttons {
+  display: flex;
+  gap: 5px; /* add some space between buttons */
+}

@@ -1,75 +1,117 @@
-// src/components/DayWiseWidget.jsx
-import React from 'react';
-import PropTypes from 'prop-types';
+// DayWiseWidget.jsx
+import React, { useState, useEffect } from 'react';
+import Papa from 'papaparse';
 import Chart from 'react-apexcharts';
-import Button from './Button'; // Import the Button component
+import Button from './Button';
 
-const DayWiseWidget = ({ title, categories, series, yAxisRange, onNext, onPrev, disableNext, disablePrev }) => {
-  const { minY, maxY } = yAxisRange;
 
-  const options = {
-    chart: {
-      id: 'day-wise-chart',
-      toolbar: {
-        show: false,
-      },
-    },
-    xaxis: {
-      categories: categories,
-      tickAmount: 8, // Adjust the number of ticks on the x-axis
-      labels: {
-        style: {
-          fontSize: '12px',
-        },
-        formatter: (value) => value,
-        padding: 10, // Add padding between x-axis labels
-      },
-    },
-    yaxis: {
-      min: minY,
-      max: maxY,
-      tickAmount: 10, // Adjust the number of ticks on the y-axis
-      labels: {
-        formatter: (value) => value.toFixed(6),
-        style: {
-          fontSize: '12px',
-        },
-        padding: 10, // Add padding between y-axis labels
-      },
-    },
+const DayWiseWidget = ({ title }) => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const parseCSV = async (url) => {
+    const response = await fetch(url);
+    const text = await response.text();
+    return new Promise((resolve, reject) => {
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => resolve(results.data),
+        error: (error) => reject(error),
+      });
+    });
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const dailyData = await parseCSV('/Daily_Trend.csv');
+        setData(dailyData);
+      } catch (error) {
+        setError('Error loading CSV data: ' + error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const transformData = (data) => {
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const startIdx = currentPage * 7;
+    const endIdx = startIdx + 7;
+    const paginatedData = data.slice(startIdx, endIdx);
+
+    const categories = [];
+    const seriesData = [];
+
+    daysOfWeek.forEach(day => {
+      categories.push(day);
+      const dayData = paginatedData.filter(item => {
+        const date = new Date(item.ds);
+        return date.toLocaleDateString('en-US', { weekday: 'short' }) === day;
+      });
+      const avg = dayData.length ? dayData.reduce((sum, item) => sum + parseFloat(item.daily), 0) / dayData.length : 0;
+      seriesData.push(avg);
+    });
+
+    return {
+      categories,
+      series: [
+        {
+          name: 'Daily Utilization',
+          data: seriesData,
+        },
+      ],
+    };
+  };
+
+  const chartData = transformData(data);
+
+  const handleNextPage = () => {
+    setCurrentPage(prevPage => Math.min(prevPage + 1, Math.ceil(data.length / 7) - 1));
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage(prevPage => Math.max(prevPage - 1, 0));
+  };
+
+  if (loading) return <p>Loading data...</p>;
+  if (error) return <p>Error: {error}</p>;
+
   return (
-    <div className="widget-chart">
-      <div className="widget-title">
+    <div>
+      <div className='header'>
         <h2>{title}</h2>
-        <div className="button-container">
-          <Button onClick={onPrev} disabled={disablePrev}>{'<'}</Button>
-          <Button onClick={onNext} disabled={disableNext}>{'>'}</Button>
+        <div className='buttons'>
+            <Button onClick={handlePrevPage} disabled={currentPage === 0}>{'<'}</Button>
+            <Button onClick={handleNextPage} disabled={currentPage === Math.ceil(data.length / 7) - 1}>{'>'}</Button>
         </div>
       </div>
-      <Chart options={options} series={series} type="line" height={350} />
+      <Chart
+        options={{
+          chart: { id: 'daywise-widget' },
+          xaxis: { categories: chartData.categories,
+            labels: {
+              padding: 25,
+            }
+           },
+          yaxis: {
+            labels: {
+              formatter: (value) => value.toFixed(6), // Update to display 6 decimal places
+              padding: 15,
+            },
+          },
+        }}
+        series={chartData.series}
+        type="line"
+        height="350"
+      />
     </div>
   );
-};
-
-DayWiseWidget.propTypes = {
-  title: PropTypes.string.isRequired,
-  categories: PropTypes.arrayOf(PropTypes.string).isRequired,
-  series: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      data: PropTypes.arrayOf(PropTypes.number).isRequired,
-    })
-  ).isRequired,
-  yAxisRange: PropTypes.shape({
-    minY: PropTypes.number.isRequired,
-    maxY: PropTypes.number.isRequired,
-  }).isRequired,
-  onNext: PropTypes.func.isRequired,
-  onPrev: PropTypes.func.isRequired,
-  disableNext: PropTypes.bool.isRequired,
-  disablePrev: PropTypes.bool.isRequired,
 };
 
 export default DayWiseWidget;
