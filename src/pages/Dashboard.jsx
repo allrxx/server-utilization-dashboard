@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import GraphWidget from '../components/GraphWidget';
 import DayWiseWidget from '../components/DayWiseWidget';
+import TrendGraph from '../components/TrendGraph'; // Import the new TrendGraph component
 import Button from '../components/Button';
 import Papa from 'papaparse';
 import './Dashboard.css'; // Import the CSS file for Dashboard
@@ -8,10 +9,12 @@ import './Dashboard.css'; // Import the CSS file for Dashboard
 const Dashboard = () => {
   const [hourlyData, setHourlyData] = useState({});
   const [dailyData, setDailyData] = useState([]);
+  const [weeklyData, setWeeklyData] = useState([]); // State for weekly data
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [currentDayPage, setCurrentDayPage] = useState(0); // State for daily data pagination
+  const [currentWeeklyPage, setCurrentWeeklyPage] = useState(0); // State for weekly data pagination
 
   const parseCSV = async (url) => {
     const response = await fetch(url);
@@ -35,6 +38,9 @@ const Dashboard = () => {
 
         const dailyData = await parseCSV('/Daily_Trend.csv'); // Fetch daily CSV from public directory
         setDailyData(dailyData);
+
+        const weeklyData = await parseCSV('/trend_weekly.csv'); // Fetch weekly CSV from public directory
+        setWeeklyData(weeklyData);
       } catch (error) {
         setError('Error loading CSV data: ' + error.message);
       } finally {
@@ -152,12 +158,46 @@ const Dashboard = () => {
       yAxisRange: { minY, maxY },
     };
   };
-  
+
+  const transformWeeklyData = (data) => {
+    const startIdx = currentWeeklyPage * 6;
+    const endIdx = startIdx + 6;
+    const paginatedData = data.slice(startIdx, endIdx);
+
+    const categories = [];
+    const weeklyValues = [];
+    const weeklyLowerValues = [];
+    const weeklyUpperValues = [];
+
+    paginatedData.forEach(item => {
+      const date = new Date(item.ds);
+      const week = date.toLocaleDateString();
+      categories.push(week);
+      weeklyValues.push(parseFloat(item.weekly));
+      weeklyLowerValues.push(parseFloat(item.weekly_lower));
+      weeklyUpperValues.push(parseFloat(item.weekly_upper));
+    });
+
+    const minY = Math.min(...weeklyLowerValues);
+    const maxY = Math.max(...weeklyUpperValues);
+
+    return {
+      categories,
+      series: [
+        {
+          name: 'Weekly Utilization',
+          data: weeklyValues,
+        },
+      ],
+      yAxisRange: { minY, maxY },
+    };
+  };
 
   const dates = Object.keys(hourlyData);
   const currentDateData = dates.length > 0 ? hourlyData[dates[currentPage]] : {};
   const hourlyChartData = transformHourlyData(currentDateData);
   const dailyChartData = transformDailyData(dailyData);
+  const weeklyChartData = transformWeeklyData(weeklyData);
 
   const handleNextPage = () => {
     setCurrentPage(prevPage => Math.min(prevPage + 1, dates.length - 1));
@@ -173,6 +213,14 @@ const Dashboard = () => {
 
   const handlePrevDayPage = () => {
     setCurrentDayPage(prevPage => Math.max(prevPage - 1, 0));
+  };
+
+  const handleNextWeeklyPage = () => {
+    setCurrentWeeklyPage(prevPage => Math.min(prevPage + 1, Math.ceil(weeklyData.length / 6) - 1));
+  };
+
+  const handlePrevWeeklyPage = () => {
+    setCurrentWeeklyPage(prevPage => Math.max(prevPage - 1, 0));
   };
 
   // Slicing the daily data for the current week
@@ -208,6 +256,16 @@ const Dashboard = () => {
           <div className="button-container">
             <Button onClick={handlePrevDayPage} disabled={currentDayPage === 0}>Previous Week</Button>
             <Button onClick={handleNextDayPage} disabled={currentDayPage === Math.ceil(dailyData.length / 7) - 1}>Next Week</Button>
+          </div>
+          <TrendGraph
+            title="Weekly CPU Utilization"
+            categories={weeklyChartData.categories}
+            series={weeklyChartData.series}
+            yAxisRange={weeklyChartData.yAxisRange}
+          />
+          <div className="button-container">
+            <Button onClick={handlePrevWeeklyPage} disabled={currentWeeklyPage === 0}>Previous</Button>
+            <Button onClick={handleNextWeeklyPage} disabled={currentWeeklyPage === Math.ceil(weeklyData.length / 6) - 1}>Next</Button>
           </div>
         </div>
       )}
