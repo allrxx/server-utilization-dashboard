@@ -11,18 +11,30 @@ const DayWiseWidget = ({ title, categories, series, yAxisRange, onNext, onPrev, 
     chart: {
       id: 'day-wise-chart',
       toolbar: {
-        show: true,
+        show: false,
       },
     },
     xaxis: {
       categories: categories,
+      tickAmount: 8, // Adjust the number of ticks on the x-axis
+      labels: {
+        style: {
+          fontSize: '12px',
+        },
+        formatter: (value) => value,
+        padding: 10, // Add padding between x-axis labels
+      },
     },
     yaxis: {
       min: minY,
       max: maxY,
-      tickAmount: 10, // Ensure more data points on y-axis
+      tickAmount: 10, // Adjust the number of ticks on the y-axis
       labels: {
         formatter: (value) => value.toFixed(6),
+        style: {
+          fontSize: '12px',
+        },
+        padding: 10, // Add padding between y-axis labels
       },
     },
   };

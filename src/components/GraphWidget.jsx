@@ -11,19 +11,32 @@ const GraphWidget = ({ title, categories, series, yAxisRange, onNext, onPrev, di
     chart: {
       id: 'cpu-utilization-chart',
       toolbar: {
-        show: true,
+        show: false,
       },
     },
     xaxis: {
       categories: categories,
+      tickAmount: 12, // Adjust the number of ticks on the x-axis
+      labels: {
+        style: {
+          fontSize: '12px',
+        },
+        formatter: (value) => value,
+        padding: 15, // Add padding between x-axis labels
+      },
     },
     yaxis: {
       min: minY,
       max: maxY,
+      tickAmount: 10, // Adjust the number of ticks on the y-axis
       labels: {
         formatter: (value) => value.toFixed(3),
+        style: {
+          fontSize: '12px',
+        },
+        padding: 15,  // Add padding between y-axis labels
       },
-    }
+    },
   };
 
   return (

@@ -11,17 +11,30 @@ const TrendGraph = ({ title, categories, series, yAxisRange, onNext, onPrev, dis
     chart: {
       id: 'trend-graph-chart',
       toolbar: {
-        show: true,
+        show: false,
       },
     },
     xaxis: {
       categories: categories,
+      tickAmount: 6, // Adjust the number of ticks on the x-axis
+      labels: {
+        style: {
+          fontSize: '12px',
+        },
+        formatter: (value) => value,
+        padding: 10, // Add padding between x-axis labels
+      },
     },
     yaxis: {
       min: minY,
       max: maxY,
+      tickAmount: 10, // Adjust the number of ticks on the y-axis
       labels: {
         formatter: (value) => value.toFixed(6),
+        style: {
+          fontSize: '10px', // Make the y-axis labels a bit smaller
+        },
+        
       },
     },
   };
