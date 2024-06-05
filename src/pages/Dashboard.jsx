@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import GraphWidget from '../components/GraphWidget';
 import DayWiseWidget from '../components/DayWiseWidget';
-import Button from '../components/Button';
+import TrendGraph from '../components/TrendGraph';
 import Papa from 'papaparse';
-import './Dashboard.css'; // Import the CSS file for Dashboard
+import './Dashboard.css';
 
 const Dashboard = () => {
   const [hourlyData, setHourlyData] = useState({});
   const [dailyData, setDailyData] = useState([]);
+  const [weeklyData, setWeeklyData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const [currentDayPage, setCurrentDayPage] = useState(0); // State for daily data pagination
+  const [currentDayPage, setCurrentDayPage] = useState(0);
+  const [currentWeeklyPage, setCurrentWeeklyPage] = useState(0);
 
   const parseCSV = async (url) => {
     const response = await fetch(url);
@@ -29,12 +31,15 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const hourlyData = await parseCSV('/trend_trend.csv'); // Fetch hourly CSV from public directory
+        const hourlyData = await parseCSV('/trend_trend.csv');
         const groupedHourlyData = groupDataByDateAndHour(hourlyData);
         setHourlyData(groupedHourlyData);
 
-        const dailyData = await parseCSV('/Daily_Trend.csv'); // Fetch daily CSV from public directory
+        const dailyData = await parseCSV('/Daily_Trend.csv');
         setDailyData(dailyData);
+
+        const weeklyData = await parseCSV('/trend_weekly.csv');
+        setWeeklyData(weeklyData);
       } catch (error) {
         setError('Error loading CSV data: ' + error.message);
       } finally {
@@ -66,27 +71,16 @@ const Dashboard = () => {
   };
 
   const transformHourlyData = (data) => {
-    const categories = [];
-    const hourlyValues = [];
+    const categories = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+    const hourlyValues = Array(24).fill(0);
 
     Object.keys(data).forEach(hour => {
+      const hourIndex = parseInt(hour);
       const hourData = data[hour];
       const avg = hourData.reduce((sum, value) => sum + value, 0) / hourData.length;
-      categories.push(`${hour}:00`);
-      hourlyValues.push(avg);
+      hourlyValues[hourIndex] = avg;
     });
 
-    // Ensure 24-hour format categories
-    for (let i = 0; i < 24; i++) {
-      if (!categories.includes(`${i}:00`)) {
-        categories.push(`${i}:00`);
-        hourlyValues.push(0); // Push zero or some default value if there is no data for that hour
-      }
-    }
-
-    categories.sort((a, b) => parseInt(a) - parseInt(b));
-
-    // Calculate min and max values for y-axis range
     const minY = Math.min(...hourlyValues);
     const maxY = Math.max(...hourlyValues);
 
@@ -94,7 +88,7 @@ const Dashboard = () => {
       categories,
       series: [
         {
-          name: 'Hourly Utilization', // Trend data series
+          name: 'Hourly Utilization',
           data: hourlyValues,
         },
       ],
@@ -103,15 +97,14 @@ const Dashboard = () => {
   };
 
   const transformDailyData = (data) => {
-    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Next Sun'];
     const categories = [];
     const dailyValues = [];
     const dailyLowerValues = [];
     const dailyUpperValues = [];
-  
+
     const dayDataMap = new Map();
-  
-    // Initialize the map with empty arrays for each day of the week
+
     daysOfWeek.forEach(day => {
       dayDataMap.set(day, {
         daily: [],
@@ -119,17 +112,19 @@ const Dashboard = () => {
         daily_upper: [],
       });
     });
-  
+
     data.forEach(item => {
       const date = new Date(item.ds);
       const day = date.toLocaleDateString('en-US', { weekday: 'short' });
-      if (dayDataMap.has(day)) {
-        dayDataMap.get(day).daily.push(parseFloat(item.daily));
-        dayDataMap.get(day).daily_lower.push(parseFloat(item.daily_lower));
-        dayDataMap.get(day).daily_upper.push(parseFloat(item.daily_upper));
+      const isSunday = date.getDay() === 0;
+      if (dayDataMap.has(day) || isSunday) {
+        const key = isSunday ? (categories.includes('Sun') ? 'Next Sun' : 'Sun') : day;
+        dayDataMap.get(key).daily.push(parseFloat(item.daily));
+        dayDataMap.get(key).daily_lower.push(parseFloat(item.daily_lower));
+        dayDataMap.get(key).daily_upper.push(parseFloat(item.daily_upper));
       }
     });
-  
+
     daysOfWeek.forEach(day => {
       const dayData = dayDataMap.get(day);
       categories.push(day);
@@ -137,10 +132,10 @@ const Dashboard = () => {
       dailyLowerValues.push(dayData.daily_lower.length ? Math.min(...dayData.daily_lower) : 0);
       dailyUpperValues.push(dayData.daily_upper.length ? Math.max(...dayData.daily_upper) : 0);
     });
-  
+
     const minY = Math.min(...dailyLowerValues);
     const maxY = Math.max(...dailyUpperValues);
-  
+
     return {
       categories,
       series: [
@@ -152,12 +147,45 @@ const Dashboard = () => {
       yAxisRange: { minY, maxY },
     };
   };
-  
+
+  const transformWeeklyData = (data) => {
+    const startIdx = currentWeeklyPage * 6;
+    const endIdx = startIdx + 6;
+    const paginatedData = data.slice(startIdx, endIdx);
+
+    const categories = [];
+    const weeklyValues = [];
+    const weeklyLowerValues = [];
+    const weeklyUpperValues = [];
+
+    paginatedData.forEach(item => {
+      const date = new Date(item.ds);
+      const week = date.toLocaleDateString();
+      categories.push(week);
+      weeklyValues.push(parseFloat(item.weekly));
+      weeklyLowerValues.push(parseFloat(item.weekly_lower));
+      weeklyUpperValues.push(parseFloat(item.weekly_upper));
+    });
+
+    const minY = Math.min(...weeklyLowerValues);
+    const maxY = Math.max(...weeklyUpperValues);
+
+    return {
+      categories,
+      series: [
+        {
+          name: 'Weekly Utilization',
+          data: weeklyValues,
+        },
+      ],
+      yAxisRange: { minY, maxY },
+    };
+  };
 
   const dates = Object.keys(hourlyData);
   const currentDateData = dates.length > 0 ? hourlyData[dates[currentPage]] : {};
   const hourlyChartData = transformHourlyData(currentDateData);
-  const dailyChartData = transformDailyData(dailyData);
+  const weeklyChartData = transformWeeklyData(weeklyData);
 
   const handleNextPage = () => {
     setCurrentPage(prevPage => Math.min(prevPage + 1, dates.length - 1));
@@ -175,7 +203,14 @@ const Dashboard = () => {
     setCurrentDayPage(prevPage => Math.max(prevPage - 1, 0));
   };
 
-  // Slicing the daily data for the current week
+  const handleNextWeeklyPage = () => {
+    setCurrentWeeklyPage(prevPage => Math.min(prevPage + 1, Math.ceil(weeklyData.length / 6) - 1));
+  };
+
+  const handlePrevWeeklyPage = () => {
+    setCurrentWeeklyPage(prevPage => Math.max(prevPage - 1, 0));
+  };
+
   const startIdx = currentDayPage * 7;
   const endIdx = startIdx + 7;
   const currentWeekData = dailyData.slice(startIdx, endIdx);
@@ -189,26 +224,36 @@ const Dashboard = () => {
         <p>Error: {error}</p>
       ) : (
         <div>
-          <GraphWidget
-            title={`CPU Utilization on ${dates[currentPage]}`}
-            categories={hourlyChartData.categories}
-            series={hourlyChartData.series}
-            yAxisRange={hourlyChartData.yAxisRange}
+          <TrendGraph
+            title="Trend"
+            categories={weeklyChartData.categories}
+            series={weeklyChartData.series}
+            yAxisRange={weeklyChartData.yAxisRange}
+            onNext={handleNextWeeklyPage}
+            onPrev={handlePrevWeeklyPage}
+            disableNext={currentWeeklyPage === Math.ceil(weeklyData.length / 6) - 1}
+            disablePrev={currentWeeklyPage === 0}
           />
-          <div className="button-container">
-            <Button onClick={handlePrevPage} disabled={currentPage === 0}>Previous Hour</Button>
-            <Button onClick={handleNextPage} disabled={currentPage === dates.length - 1}>Next Hour</Button>
-          </div>
           <DayWiseWidget
-            title={`Day-wise CPU Utilization`}
+            title={`Weekly`}
             categories={currentWeekChartData.categories}
             series={currentWeekChartData.series}
             yAxisRange={currentWeekChartData.yAxisRange}
+            onNext={handleNextDayPage}
+            onPrev={handlePrevDayPage}
+            disableNext={currentDayPage === Math.ceil(dailyData.length / 7) - 1}
+            disablePrev={currentDayPage === 0}
           />
-          <div className="button-container">
-            <Button onClick={handlePrevDayPage} disabled={currentDayPage === 0}>Previous Week</Button>
-            <Button onClick={handleNextDayPage} disabled={currentDayPage === Math.ceil(dailyData.length / 7) - 1}>Next Week</Button>
-          </div>
+          <GraphWidget
+            title={`Daily ${dates[currentPage]}`}
+            categories={hourlyChartData.categories}
+            series={hourlyChartData.series}
+            yAxisRange={hourlyChartData.yAxisRange}
+            onNext={handleNextPage}
+            onPrev={handlePrevPage}
+            disableNext={currentPage === dates.length - 1}
+            disablePrev={currentPage === 0}
+          />
         </div>
       )}
     </div>

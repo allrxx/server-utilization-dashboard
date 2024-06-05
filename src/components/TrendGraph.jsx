@@ -1,28 +1,28 @@
-// src/components/GraphWidget.jsx
+// src/components/TrendGraph.jsx
 import React from 'react';
 import PropTypes from 'prop-types';
 import Chart from 'react-apexcharts';
 import Button from './Button'; // Import the Button component
 
-const GraphWidget = ({ title, categories, series, yAxisRange, onNext, onPrev, disableNext, disablePrev }) => {
+const TrendGraph = ({ title, categories, series, yAxisRange, onNext, onPrev, disableNext, disablePrev }) => {
   const { minY, maxY } = yAxisRange;
 
   const options = {
     chart: {
-      id: 'cpu-utilization-chart',
+      id: 'trend-graph-chart',
       toolbar: {
         show: false,
       },
     },
     xaxis: {
       categories: categories,
-      tickAmount: 12, // Adjust the number of ticks on the x-axis
+      tickAmount: 6, // Adjust the number of ticks on the x-axis
       labels: {
         style: {
           fontSize: '12px',
         },
         formatter: (value) => value,
-        padding: 15, // Add padding between x-axis labels
+        padding: 10, // Add padding between x-axis labels
       },
     },
     yaxis: {
@@ -30,11 +30,11 @@ const GraphWidget = ({ title, categories, series, yAxisRange, onNext, onPrev, di
       max: maxY,
       tickAmount: 10, // Adjust the number of ticks on the y-axis
       labels: {
-        formatter: (value) => value.toFixed(3),
+        formatter: (value) => value.toFixed(6),
         style: {
-          fontSize: '12px',
+          fontSize: '10px', // Make the y-axis labels a bit smaller
         },
-        padding: 15,  // Add padding between y-axis labels
+        
       },
     },
   };
@@ -53,7 +53,7 @@ const GraphWidget = ({ title, categories, series, yAxisRange, onNext, onPrev, di
   );
 };
 
-GraphWidget.propTypes = {
+TrendGraph.propTypes = {
   title: PropTypes.string.isRequired,
   categories: PropTypes.arrayOf(PropTypes.string).isRequired,
   series: PropTypes.arrayOf(
@@ -72,4 +72,4 @@ GraphWidget.propTypes = {
   disablePrev: PropTypes.bool.isRequired,
 };
 
-export default GraphWidget;
+export default TrendGraph;

@@ -1,23 +1,22 @@
 /* src/components/Button.css */
 .btn {
-    background-color: #2c3e50;
-    color: rgb(255, 234, 234);
-    border: none;
-    padding: 10px 20px;
-    margin: 10px;
-    font-size: 16px;
-    border-radius: 9px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .btn:disabled {
-    background-color: #c0c0c000;
-    color: black;
-    cursor: not-allowed;
-  }
-  
-  .btn:not(:disabled):hover {
-    background-color: #0056b3;
-  }
-  
+  background-color: #2c3e50;
+  color: rgb(255, 234, 234);
+  border: none;
+  padding: 8px 18px;
+  /* Remove margin to decrease space between buttons */
+  font-size: 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn:disabled {
+  background-color: #c0c0c04e;
+  color: black;
+  cursor: not-allowed;
+}
+
+.btn:not(:disabled):hover {
+  background-color: #0056b3;
+}
