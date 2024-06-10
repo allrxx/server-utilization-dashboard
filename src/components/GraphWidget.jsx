@@ -115,8 +115,8 @@ const GraphWidget = ({ title }) => {
               padding:15,
             },
           },
-          toolbar: { show: false, },
         }}
+        
         series={chartData.series}
         type="line"
         height="350"
