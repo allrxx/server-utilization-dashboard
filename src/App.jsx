@@ -6,7 +6,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Server Utilization Dashboard</h1>
+        <h2>K8AIChatbot</h2>
       </header>
       <main>
         <Dashboard />
