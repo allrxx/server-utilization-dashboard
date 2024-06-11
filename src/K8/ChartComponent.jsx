@@ -1,18 +1,11 @@
 // src/components/ChartComponent.js
 import React from 'react';
+import PropTypes from 'prop-types';
 import ReactApexChart from 'react-apexcharts';
 
 class ChartComponent extends React.Component {
     constructor(props) {
         super(props);
-        const { rawData } = props;
-        const dataFrame = rawData.find(item => item.data_type === 'dataframe');
-        
-        if (dataFrame) {
-            this.dates = dataFrame.data_value[0].column_values;
-            this.costs = dataFrame.data_value[1].column_values.map(value => parseFloat(value));
-            this.namespaces = dataFrame.data_value[2].column_values; // Assuming namespaces are the third column
-        }
 
         this.state = {
             options: {
@@ -23,12 +16,9 @@ class ChartComponent extends React.Component {
                         show: false,
                     }
                 },
-                series: [{
-                    name: 'Total Resource Cost',
-                    data: this.costs.map((cost, index) => ({ x: this.namespaces[index], y: cost }))
-                }],
+                series: [],
                 xaxis: {
-                    categories: this.namespaces,
+                    categories: [],
                     title: {
                         text: 'Namespace',
                         style: {
@@ -37,8 +27,8 @@ class ChartComponent extends React.Component {
                     }
                 },
                 yaxis: {
-                    min: Math.floor(Math.min(...this.costs)),
-                    max: Math.ceil(Math.max(...this.costs)),
+                    min: 0,
+                    max: 0,
                     labels: {
                         formatter: function (value) {
                             return value.toFixed(2);
@@ -66,6 +56,35 @@ class ChartComponent extends React.Component {
                 }
             }
         };
+
+        if (props.rawData) {
+            const dataFrame = props.rawData.find(item => item.data_type === 'dataframe');
+            
+            if (dataFrame) {
+                const dates = dataFrame.data_value[0].column_values;
+                const costs = dataFrame.data_value[1].column_values.map(value => parseFloat(value));
+                const namespaces = dataFrame.data_value[2].column_values;
+
+                this.state = {
+                    options: {
+                        ...this.state.options,
+                        series: [{
+                            name: 'Total Resource Cost',
+                            data: costs.map((cost, index) => ({ x: namespaces[index], y: cost }))
+                        }],
+                        xaxis: {
+                            ...this.state.options.xaxis,
+                            categories: namespaces,
+                        },
+                        yaxis: {
+                            ...this.state.options.yaxis,
+                            min: Math.floor(Math.min(...costs)),
+                            max: Math.ceil(Math.max(...costs)),
+                        }
+                    }
+                };
+            }
+        }
     }
 
     render() {
@@ -76,5 +95,14 @@ class ChartComponent extends React.Component {
         );
     }
 }
+
+ChartComponent.propTypes = {
+    rawData: PropTypes.arrayOf(PropTypes.shape({
+        data_type: PropTypes.string.isRequired,
+        data_value: PropTypes.arrayOf(PropTypes.shape({
+            column_values: PropTypes.array.isRequired
+        })).isRequired
+    })).isRequired
+};
 
 export default ChartComponent;
