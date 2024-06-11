@@ -35,7 +35,7 @@ class ChartComponent extends React.Component {
                         }
                     },
                     title: {
-                        text: 'Cost ($)',
+                        text: 'Count',
                         style: {
                             color: '#333'
                         }
@@ -61,16 +61,15 @@ class ChartComponent extends React.Component {
             const dataFrame = props.rawData.find(item => item.data_type === 'dataframe');
             
             if (dataFrame) {
-                const dates = dataFrame.data_value[0].column_values;
-                const costs = dataFrame.data_value[1].column_values.map(value => parseFloat(value));
-                const namespaces = dataFrame.data_value[2].column_values;
+                const namespaces = dataFrame.data_value[0].column_values;
+                const counts = dataFrame.data_value[1].column_values.map(value => parseFloat(value));
 
                 this.state = {
                     options: {
                         ...this.state.options,
                         series: [{
-                            name: 'Total Resource Cost',
-                            data: costs.map((cost, index) => ({ x: namespaces[index], y: cost }))
+                            name: 'Count',
+                            data: counts
                         }],
                         xaxis: {
                             ...this.state.options.xaxis,
@@ -78,8 +77,8 @@ class ChartComponent extends React.Component {
                         },
                         yaxis: {
                             ...this.state.options.yaxis,
-                            min: Math.floor(Math.min(...costs)),
-                            max: Math.ceil(Math.max(...costs)),
+                            min: Math.floor(Math.min(...counts)),
+                            max: Math.ceil(Math.max(...counts)),
                         }
                     }
                 };
@@ -89,8 +88,8 @@ class ChartComponent extends React.Component {
 
     render() {
         return (
-            <div id="chart">
-                <ReactApexChart options={this.state.options} series={this.state.options.series} type="bar" height={400} />
+            <div id="chart" style={{ marginBottom: '40px', width: 500 }}> {/* Added margin-bottom */}
+                <ReactApexChart options={this.state.options} series={this.state.options.series} type="bar" height={600} /> {/* Increased height */}
             </div>
         );
     }

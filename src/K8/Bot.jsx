@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { postChatMessage } from '../services/api';
 import './Bot.css';
+import ChartComponent from './ChartComponent'; // Import the ChartComponent
 
 const Bot = () => {
     const [messages, setMessages] = useState([]);
@@ -24,19 +25,40 @@ const Bot = () => {
         return table.outerHTML;
     };
 
-    const renderMessageContent = (data) => {
-        switch (data.data_type) {
-            case 'dataframe':
-                return <div dangerouslySetInnerHTML={{ __html: renderDataFrame(data.data_value) }} />;
-            case 'image':
-                return <img src={data.data_value} alt="Graph" />;
-            case 'string':
-                const formattedDataValue = data.data_value.replace(/\n/g, '<br/>');
-                return <div dangerouslySetInnerHTML={{ __html: formattedDataValue }} />;
-            default:
-                return <div>Unsupported data type</div>;
-        }
-    };
+    const renderUnknown = (data) => {
+        // Assuming `data` might have a `data_type` property or any other property you're interested in
+        // You can adjust the displayed message based on the content of `data`
+        console.log('The DataType is ',data.data);
+        if(data.data_type === 'image')
+        return <p></p>
+        else
+        return <p>Unknown data type: {data.data_type ? data.data_type : 'No additional info available'}</p>;
+    }; 
+    
+
+    const renderHyperlinks = (dataValue) => {
+        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
+        return dataValue.replace(urlRegex, (url) => `<a href="${url}" target="_blank">${url}</a>`);
+      };
+      
+      const renderMessageContent = (data) => {
+          switch (data.data_type) {
+              case 'dataframe':
+              case 'img':
+                  return (
+                      <div>
+                          <div style={{ marginBottom: '20px' }} dangerouslySetInnerHTML={{ __html: renderDataFrame(data.data_value) }} />
+                          <ChartComponent rawData={[data]} /> {/* Render ChartComponent */}
+                      </div>
+                  );
+              case 'string':
+                  // Replace newlines with <br/> and render hyperlinks as clickable
+                  const formattedDataValue = renderHyperlinks(data.data_value.replace(/\n/g, '<br/>'));
+                  return <div dangerouslySetInnerHTML={{ __html: formattedDataValue }} />;
+              default:
+                  return renderUnknown(data);
+          }
+      };
 
     const handleSend = async () => {
         if (!userInput.trim()) return;
