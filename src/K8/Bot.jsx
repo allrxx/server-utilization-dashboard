@@ -26,39 +26,35 @@ const Bot = () => {
     };
 
     const renderUnknown = (data) => {
-        // Assuming `data` might have a `data_type` property or any other property you're interested in
-        // You can adjust the displayed message based on the content of `data`
         console.log('The DataType is ',data.data);
         if(data.data_type === 'image')
-        return <p></p>
+            return <p></p>;
         else
-        return <p>Unknown data type: {data.data_type ? data.data_type : 'No additional info available'}</p>;
+            return <p>Unknown data type: {data.data_type ? data.data_type : 'No additional info available'}</p>;
     }; 
     
-
     const renderHyperlinks = (dataValue) => {
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
         return dataValue.replace(urlRegex, (url) => `<a href="${url}" target="_blank">${url}</a>`);
-      };
-      
-      const renderMessageContent = (data) => {
-          switch (data.data_type) {
-              case 'dataframe':
-              case 'img':
-                  return (
-                      <div>
-                          <div style={{ marginBottom: '20px' }} dangerouslySetInnerHTML={{ __html: renderDataFrame(data.data_value) }} />
-                          <ChartComponent rawData={[data]} /> {/* Render ChartComponent */}
-                      </div>
-                  );
-              case 'string':
-                  // Replace newlines with <br/> and render hyperlinks as clickable
-                  const formattedDataValue = renderHyperlinks(data.data_value.replace(/\n/g, '<br/>'));
-                  return <div dangerouslySetInnerHTML={{ __html: formattedDataValue }} />;
-              default:
-                  return renderUnknown(data);
-          }
-      };
+    };
+
+    const renderMessageContent = (data) => {
+        switch (data.data_type) {
+            case 'dataframe':
+            case 'img':
+                return (
+                    <div>
+                        <div style={{ marginBottom: '20px' }} dangerouslySetInnerHTML={{ __html: renderDataFrame(data.data_value) }} />
+                        <ChartComponent rawData={[data]} /> {/* Render ChartComponent */}
+                    </div>
+                );
+            case 'string':
+                const formattedDataValue = renderHyperlinks(data.data_value.replace(/\n/g, '<br/>'));
+                return <div dangerouslySetInnerHTML={{ __html: formattedDataValue }} />;
+            default:
+                return renderUnknown(data);
+        }
+    };
 
     const handleSend = async () => {
         if (!userInput.trim()) return;
