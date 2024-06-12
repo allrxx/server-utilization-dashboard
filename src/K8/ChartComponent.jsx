@@ -85,16 +85,35 @@ class ChartComponent extends React.Component {
 
   initializeChartData = (rawData) => {
     const dataFrame = rawData.find((item) => item.data_type === "dataframe");
-
+  
     if (dataFrame) {
-      const categories = dataFrame.data_value[0].column_values; // Assuming first column is for x-axis categories
-      const columns = dataFrame.data_value.slice(1); // Remaining columns for data series
-
+      const objectColumns = dataFrame.data_value.filter(column => column.column_type === "object");
+      let message = null;
+  
+      if (objectColumns.length > 2) {
+        // Exclude columns and set a message
+        dataFrame.data_value = dataFrame.data_value.filter(column => column.column_type !== "object");
+        message = "Some columns were excluded because they are of type 'object' and there are more than two such columns.";
+      } else if (objectColumns.length === 2) {
+        // Combine the second object column with the first and display under x-axis
+        const [firstColumn, secondColumn] = objectColumns;
+        firstColumn.column_values = firstColumn.column_values.map((value, index) => 
+          `${value} + ${secondColumn.column_values[index]}`
+        );
+        // Remove the second object column from dataFrame.data_value
+        const secondColumnIndex = dataFrame.data_value.indexOf(secondColumn);
+        dataFrame.data_value.splice(secondColumnIndex, 1);
+      }
+  
+      // Proceed with the rest of the initialization as before
+      const categories = dataFrame.data_value[0].column_values;
+      const columns = dataFrame.data_value.slice(1);
+  
       const series = columns.map((column) => ({
         name: column.column_name,
         data: column.column_values.map((value) => parseFloat(value)),
       }));
-
+  
       const allValues = columns.reduce(
         (acc, column) =>
           acc.concat(
@@ -104,11 +123,9 @@ class ChartComponent extends React.Component {
           ),
         []
       );
-      const minValue =
-        allValues.length > 0 ? Math.floor(Math.min(...allValues)) : 0; // Default minValue to 0 if allValues is empty
-      const maxValue =
-        allValues.length > 0 ? Math.ceil(Math.max(...allValues)) : 0; // Default maxValue to 0 if allValues is empty
-
+      const minValue = allValues.length > 0 ? Math.floor(Math.min(...allValues)) : 0;
+      const maxValue = allValues.length > 0 ? Math.ceil(Math.max(...allValues)) : 0;
+  
       this.setState({
         options: {
           ...this.state.options,
@@ -127,33 +144,34 @@ class ChartComponent extends React.Component {
             style: {
               colors: ["#fff"],
               fontSize: "9px",
-            },
+            }
           }
         },
+        message: message, // Add a message state to display the exclusion message if needed
       });
     }
   };
 
   render() {
     return (
-      <div
-        id="chart"
-        style={{
-          marginBottom: "40px",
-          width: "auto",
-          height: "auto",
-          minWidth: "100vh",
-        }}
-      >
-        {" "}
-        {/* Added margin-bottom */}
-        <ReactApexChart
-          options={this.state.options}
-          series={this.state.options.series}
-          type={this.state.options.chart.type}
-          height={600}
-        />{" "}
-        {/* Increased height */}
+      <div>
+        {this.state.message && <p>{this.state.message}</p>}
+        <div
+          id="chart"
+          style={{
+            marginBottom: "40px",
+            width: "auto",
+            height: "auto",
+            minWidth: "100vh",
+          }}
+        >
+          <ReactApexChart
+            options={this.state.options}
+            series={this.state.options.series}
+            type={this.state.options.chart.type}
+            height={600}
+          />
+        </div>
       </div>
     );
   }
