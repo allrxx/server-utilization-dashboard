@@ -3,10 +3,12 @@ import DayWiseWidget from '../components/DayWiseWidget';
 import TrendGraph from '../components/TrendGraph';
 import './Dashboard.css';
 import Bot from '../K8/Bot';
+import MyComponent from '../K8/MyComponent';
+require('dotenv').config();
 
 const Dashboard = () => (
   <div>
-    <Bot / >
+    <MyComponent></MyComponent>
   </div>
 );
 

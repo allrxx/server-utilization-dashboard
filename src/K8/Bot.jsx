@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { postChatMessage } from '../services/api';
 import './Bot.css';
-import ChartComponent from './ChartComponent'; // Import the ChartComponent
+import DAGG from './DAGG';
 
 const Bot = () => {
     const [messages, setMessages] = useState([]);
@@ -41,13 +41,14 @@ const Bot = () => {
     const renderMessageContent = (data) => {
         switch (data.data_type) {
             case 'dataframe':
-            case 'img':
                 return (
                     <div>
                         <div style={{ marginBottom: '20px' }} dangerouslySetInnerHTML={{ __html: renderDataFrame(data.data_value) }} />
-                        <ChartComponent rawData={[data]} /> {/* Render ChartComponent */}
+                        <DAGG data={[data]} /> {/* Render DAGG Component */}
                     </div>
                 );
+            case 'img':
+                return <DAGG data={[data]} />; // Use DAGG component to render the graph
             case 'string':
                 const formattedDataValue = renderHyperlinks(data.data_value.replace(/\n/g, '<br/>'));
                 return <div dangerouslySetInnerHTML={{ __html: formattedDataValue }} />;
