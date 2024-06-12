@@ -74,6 +74,7 @@ class ChartComponent extends React.Component {
           },
         },
       },
+      message: null,
     };
   }
 
@@ -85,11 +86,11 @@ class ChartComponent extends React.Component {
 
   initializeChartData = (rawData) => {
     const dataFrame = rawData.find((item) => item.data_type === "dataframe");
-  
+
     if (dataFrame) {
       const objectColumns = dataFrame.data_value.filter(column => column.column_type === "object");
       let message = null;
-  
+
       if (objectColumns.length > 2) {
         // Exclude columns and set a message
         dataFrame.data_value = dataFrame.data_value.filter(column => column.column_type !== "object");
@@ -104,16 +105,15 @@ class ChartComponent extends React.Component {
         const secondColumnIndex = dataFrame.data_value.indexOf(secondColumn);
         dataFrame.data_value.splice(secondColumnIndex, 1);
       }
-  
-      // Proceed with the rest of the initialization as before
+
       const categories = dataFrame.data_value[0].column_values;
       const columns = dataFrame.data_value.slice(1);
-  
+
       const series = columns.map((column) => ({
         name: column.column_name,
         data: column.column_values.map((value) => parseFloat(value)),
       }));
-  
+
       const allValues = columns.reduce(
         (acc, column) =>
           acc.concat(
@@ -125,7 +125,7 @@ class ChartComponent extends React.Component {
       );
       const minValue = allValues.length > 0 ? Math.floor(Math.min(...allValues)) : 0;
       const maxValue = allValues.length > 0 ? Math.ceil(Math.max(...allValues)) : 0;
-  
+
       this.setState({
         options: {
           ...this.state.options,
@@ -147,7 +147,7 @@ class ChartComponent extends React.Component {
             }
           }
         },
-        message: message, // Add a message state to display the exclusion message if needed
+        message: message,
       });
     }
   };
