@@ -45,7 +45,7 @@ const Bot = () => {
                 return (
                     <div>
                         <div style={{ marginBottom: '20px' }} dangerouslySetInnerHTML={{ __html: renderDataFrame(data.data_value) }} />
-                        <ChartComponent rawData={[data]} /> {/* Render ChartComponent */}
+                        <ChartComponent rawData={[data]} /> 
                     </div>
                 );
             case 'string':
