@@ -84,6 +84,7 @@ const Bot = () => {
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             handleSend();
+            setUserInput(" ");
         }
     };
 
