@@ -1,0 +1,57 @@
+/* src/components/Button.css */
+.btn {
+  background-color: #007AFF;
+  color: rgb(255, 234, 234);
+  border: none;
+  padding: 6px 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn:disabled {
+  background-color: #c0c0c04e;
+  color: black;
+  cursor: not-allowed;
+}
+
+.btn:not(:disabled):hover {
+  background-color: #0056b3;
+}
+
+.buttons {
+  display: flex;
+  gap: 5px; /* add some space between buttons */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  padding-right: 12;
+  background-color: #22222200;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  margin-left: -50px;
+}
+
+.dropdown {
+  background-color: #383838;
+  color: #dddddd;
+  border: 1px solid #dddddd;
+  border-radius: 7px;
+  padding: 10px;
+  padding-right: 13px;
+  margin-left: 10px;
+  width: 200px;
+}
+
+.dropdown option {
+  background-color: #383838;
+  color: #dddddd;
+}

@@ -6,7 +6,9 @@ import Bot from '../K8/Bot';
 
 const Dashboard = () => (
   <div>
-    <Bot / >
+    <GraphWidget title={'trend'} / >
+    <DayWiseWidget title={'trend'} / >
+    <TrendGraph title={'trend'} / >
   </div>
 );
 

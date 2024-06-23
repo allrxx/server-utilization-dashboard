@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { postChatMessage } from '../services/api';
 import './Bot.css';
-import ChartComponent from './ChartComponent'; // Import the ChartComponent
+import ChartComponent from './ChartComponent';
 
 const Bot = () => {
     const [messages, setMessages] = useState([]);
@@ -26,31 +26,42 @@ const Bot = () => {
     };
 
     const renderUnknown = (data) => {
-        console.log('The DataType is ',data.data);
-        if(data.data_type === 'image')
-            return <p></p>;
-        else
-            return <p>Unknown data type: {data.data_type ? data.data_type : 'No additional info available'}</p>;
-    }; 
-    
+        console.log('The renderUnknown is triggered \n DataType is ', data.data);
+        return <p>Unknown data type: {data.data_type ? data.data_type : 'No additional info available'}</p>;
+    };
+
     const renderHyperlinks = (dataValue) => {
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
         return dataValue.replace(urlRegex, (url) => `<a href="${url}" target="_blank">${url}</a>`);
     };
 
+    const shouldRenderChart = (dataValue) => {
+        const numColumns = dataValue.length;
+        const objectColumns = dataValue.filter(col => col.column_type === 'object').length;
+        const hasSufficientData = dataValue.every(col => col.column_values.length >= 4);
+
+        return numColumns >= 2 && numColumns <= 4 && objectColumns >= 2 && hasSufficientData;
+    };
+
     const renderMessageContent = (data) => {
         switch (data.data_type) {
             case 'dataframe':
-            case 'img':
                 return (
                     <div>
                         <div style={{ marginBottom: '20px' }} dangerouslySetInnerHTML={{ __html: renderDataFrame(data.data_value) }} />
-                        <ChartComponent rawData={[data]} /> 
+                        {shouldRenderChart(data.data_value) && <ChartComponent rawData={[data]} />}
                     </div>
                 );
             case 'string':
                 const formattedDataValue = renderHyperlinks(data.data_value.replace(/\n/g, '<br/>'));
                 return <div dangerouslySetInnerHTML={{ __html: formattedDataValue }} />;
+            case 'image':
+                console.log("This is the data passed in the switch case to the image case : ", data)
+                return (
+                    <div>
+                        <ChartComponent rawData={[data]} />
+                    </div>
+                );
             default:
                 return renderUnknown(data);
         }

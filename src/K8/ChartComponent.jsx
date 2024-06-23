@@ -135,6 +135,9 @@ class ChartComponent extends React.Component {
             categories: categories,
           },
           yaxis: {
+                        formatter: function (value) {
+              return value.toFixed(2);
+            },
             ...this.state.options.yaxis,
             min: minValue,
             max: maxValue,
