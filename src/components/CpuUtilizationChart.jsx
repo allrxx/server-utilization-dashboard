@@ -18,7 +18,7 @@ const CpuUtilizationChart = ({ data }) => {
 
       const filteredTimes = [];
       let lastHour = null;
-      times.forEach((time, index) => {
+      times.forEach((time) => {
         const currentHour = time.split(':')[0];
         if (currentHour !== lastHour) {
           filteredTimes.push(time);
@@ -31,8 +31,8 @@ const CpuUtilizationChart = ({ data }) => {
       setChartData({
         times: filteredTimes,
         trendValues,
-        lowerBond,
-        upperBond
+        lowerBond: parseFloat(lowerBond.toFixed(7)),
+        upperBond: parseFloat(upperBond.toFixed(7))
       });
     };
 
@@ -50,6 +50,9 @@ const CpuUtilizationChart = ({ data }) => {
       categories: times,
       title: {
         text: 'Time'
+      },
+      labels: {
+        offsetY: 15 // Increase this value to create more space
       }
     },
     yaxis: {

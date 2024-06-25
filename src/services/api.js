@@ -17,14 +17,13 @@ export const postChatMessage = async (message) => {
   }
 };
 
-export const getTrendData = async () => {
-  const endpoint = 'http://portal.costsense/gateway/v1/trend/clusters/datacenter-cluster?resource=CPU&seasonality=daily';
-  
+export const getTrendData = async (cluster, resource, seasonality) => {
+  console.log(cluster, resource, seasonality);
+  const endpoint = `http://portal.costsense/gateway/v1/trend/clusters/${cluster}?resource=${resource}&seasonality=${seasonality}`;
   try {
-    const response = await axios.get(endpoint);
-    return response.data;
+    const res = await axios.get(endpoint);
+    return res.data;
   } catch (error) {
-    console.error('Error fetching trend data:', error.message);
     throw new Error(`Failed to fetch trend data: ${error.message}`);
   }
 };
