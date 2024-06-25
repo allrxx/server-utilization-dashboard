@@ -1,51 +1,60 @@
-// CpuUtilizationChart.js
-import React, { useState, useEffect } from "react";
-import Chart from "react-apexcharts";
+import React from 'react';
+import Chart from 'react-apexcharts';
 
 const CpuUtilizationChart = ({ data }) => {
-  // Extract the categories (dates) and series data from the input data
-  const dates = data.map((item) => item.dateTime);
-  const trendValues = data.map((item) => item.trendValue);
-  const lowerBond = Math.min(...data.map((item) => item.trendLower));
-  const upperBond = Math.max(...data.map((item) => item.trendUpper));
+  // Extract the categories (time) and series data from the input data
+  const times = data.map(item => new Date(item.dateTime).toTimeString().slice(0, 5));
+  const trendValues = data.map(item => item.trendValue);
+  const lowerBond = Math.min(...data.map(item => item.trendLower));
+  const upperBond = Math.max(...data.map(item => item.trendUpper));
+
+  // Function to filter out duplicate hours, only showing one label per hour
+  const filteredTimes = [];
+  let lastHour = null;
+  times.forEach((time, index) => {
+    const currentHour = time.slice(0, 2); // Extract hour
+    if (currentHour !== lastHour) {
+      filteredTimes.push(time);
+      lastHour = currentHour;
+    } else {
+      filteredTimes.push('');
+    }
+  });
 
   // Define the chart options
   const chartOptions = {
     chart: {
-      id: "cpu-utilization-chart",
-      type: "line",
+      id: 'cpu-utilization-chart',
+      type: 'line'
     },
     xaxis: {
-      categories: dates,
+      categories: filteredTimes,
       title: {
-        text: "Date",
-      },
-      labels: {
-        format: "yyyy-MM-dd HH:mm:ss",
-      },
+        text: 'Time'
+      }
     },
     yaxis: {
       min: lowerBond,
       max: upperBond,
       title: {
-        text: "CPU Utilization",
-      },
+        text: 'CPU Utilization'
+      }
     },
     stroke: {
-      curve: "smooth",
+      curve: 'smooth'
     },
     title: {
-      text: "CPU Utilization Over Time",
-      align: "left",
-    },
+      text: 'CPU Utilization Over Time',
+      align: 'left'
+    }
   };
 
   // Define the series data
   const chartSeries = [
     {
-      name: "Trend Value",
-      data: trendValues,
-    },
+      name: 'Trend Value',
+      data: trendValues
+    }
   ];
 
   return (
