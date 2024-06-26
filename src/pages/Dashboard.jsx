@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CpuUtilizationChart from '../components/CpuUtilizationChart';
-import WeeklyWidget from '../components/weeklyWidget';
+import WeeklyWidget from '../components/WeeklyWidget';
 import { getTrendData } from '../services/api';
 
 const Dashboard = () => {
@@ -22,13 +22,22 @@ const Dashboard = () => {
     fetchData();
   }, [cluster, resource, seasonality]);
 
+  const handleSeasonalityChange = (event) => {
+    setSeasonality(event.target.value);
+  };
+
   return (
     <div>
-      <CpuUtilizationChart data={data} />
-      <WeeklyWidget cluster={cluster} resource={resource} />
-      {/* <GraphWidget title="Graph" cluster={cluster} resource={resource} />
-      <DayWiseWidget title="trend" />
-      <TrendGraph title="trend" /> */}
+      <select onChange={handleSeasonalityChange} value={seasonality}>
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        {/* Add more options as needed */}
+      </select>
+      {seasonality === 'daily' ? (
+        <CpuUtilizationChart data={data} />
+      ) : (
+        <WeeklyWidget cluster={cluster} resource={resource} seasonality={seasonality} />
+      )}
     </div>
   );
 };
