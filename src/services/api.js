@@ -27,3 +27,14 @@ export const getTrendData = async (cluster, resource, seasonality) => {
     throw new Error(`Failed to fetch trend data: ${error.message}`);
   }
 };
+
+// New function to fetch weekly trend data
+export const getWeeklyTrendData = async (cluster, resource) => {
+  const endpoint = `http://portal.costsense/gateway/v1/trend/clusters/${cluster}?resource=${resource}&seasonality=weekly`;
+  try {
+    const res = await axios.get(endpoint);
+    return res.data;
+  } catch (error) {
+    throw new Error(`Failed to fetch weekly trend data: ${error.message}`);
+  }
+};

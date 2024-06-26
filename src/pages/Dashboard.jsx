@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import GraphWidget from '../components/GraphWidget';
-import DayWiseWidget from '../components/DayWiseWidget';
-import TrendGraph from '../components/TrendGraph';
-import Bot from '../K8/Bot';
-import './Dashboard.css';
 import CpuUtilizationChart from '../components/CpuUtilizationChart';
+import WeeklyWidget from '../components/weeklyWidget';
 import { getTrendData } from '../services/api';
 
 const Dashboard = () => {
@@ -29,6 +25,7 @@ const Dashboard = () => {
   return (
     <div>
       <CpuUtilizationChart data={data} />
+      <WeeklyWidget cluster={cluster} resource={resource} />
       {/* <GraphWidget title="Graph" cluster={cluster} resource={resource} />
       <DayWiseWidget title="trend" />
       <TrendGraph title="trend" /> */}

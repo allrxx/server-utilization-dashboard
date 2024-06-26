@@ -25,3 +25,26 @@
   display: flex;
   gap: 5px; /* add some space between buttons */
 }
+
+.tooltip-container {
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+}
+
+.tooltip-time {
+  font-weight: bold;
+  color: #333;
+}
+
+.tooltip-date {
+  font-style: italic;
+  color: #555;
+}
+
+.tooltip-container div {
+  margin: 2px 0;
+}
